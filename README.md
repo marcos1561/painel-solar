@@ -5,6 +5,6 @@ Sete as constantes, a orientação do quadrilátero e o intervalo de tempo no ar
 
 O ponto incial do tempo é quando o Sol está com máxima declinação (solstício de inverno no hemisfério Sul e solstício de verão no hemisfério Norte).
 
-## Pressupocições: 
+## Pressuposições: 
 * É assumido clima perfeito (a luz do Sol nunca é bloquada por fatores climáticos).
 * Nunhum objeto está entre o quadrilátero e o Sol durante todo o ano, ou seja, a luz está incidindo no quadrilátero enquanto o Sol estiver acima do horizonte.
