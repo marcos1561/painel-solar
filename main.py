@@ -38,3 +38,9 @@ total_energy = solar_energy.calculate_energy() # Calculando a energia incidente
 print(total_energy) 
 
 # solar_energy.range_orientation([-4, 4], [27-1, 27+6], 1)
+
+p_1 = np.array([1,0,0])
+p_2 = np.array([0,1,0])
+# solar_energy.orintation_graph(inc_config=(20, 40, 1), rot_config=(-20, 20, 10), p_1=p_1, p_2=p_2)
+
+solar_energy.delta_orintation_compar(-4, 4, 20)

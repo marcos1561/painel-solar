@@ -1,7 +1,9 @@
+from matplotlib.text import get_rotation
 from numpy import cos, sin, arcsin, pi
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from numpy.matrixlib.defmatrix import matrix
 
 class LigthArea(object):
     def __init__(self, phi, e, w_s, v_sa, v_sd,  p_1, p_2) -> None:
@@ -131,7 +133,7 @@ class LigthArea(object):
 
     def calculate_energy(self):
         '''
-        Calcula a enrgia solar que passa pelo quadrilátero no intervalo de tempo definido.
+        Calcula a energia solar que passa pelo quadrilátero no intervalo de tempo definido.
 
         PARÂMETROS
         ----------
@@ -139,7 +141,7 @@ class LigthArea(object):
         
         RETORNA
         -------
-            Nada
+            Energia total incidida no quadrilátero durante o período especificado. 
         '''
         int_area = 0
         t_x = [self.t_i]
@@ -232,3 +234,96 @@ class LigthArea(object):
             fig.colorbar(surf, shrink=0.5, aspect=5)
 
             plt.show()
+
+    
+    def rotate_plate(self, matrix, ang_i, ang_f, num_points, p_1, p_2):
+        default_p1 = self.p_1
+        default_p2 = self.p_2
+
+        total_energy = []
+
+        ang_interval = np.linspace(ang_i, ang_f, num_points)
+        for ang in ang_interval:
+            ang = ang/180*pi
+
+            self.p_1 = matrix(ang).dot(p_1)
+            self.p_2 = matrix(ang).dot(p_2)
+
+            t_energy = self.calculate_energy()
+            total_energy.append(t_energy)
+            print(f"{ang/pi*180} | {t_energy}")
+
+        self.p_1 = default_p1
+        self.p_2 = default_p2
+
+        return total_energy, ang_interval
+
+
+    def orintation_graph(self, inc_config, rot_config, p_1, p_2):
+        # INCLINAÇÃO
+        print("INCLINAÇÃO")
+
+        def matrix_inc(ang): 
+            return np.array([[1, 0, 0], [0, cos(ang), sin(ang)], [0,-sin(ang), cos(ang)]])
+        
+        total_energy_inc, ang_interval_inc = self.rotate_plate(matrix_inc, *inc_config, p_1, p_2)
+
+        # ROTAÇÃO
+        print("\nROTAÇÃO")
+        
+        def matrix_rot(ang): 
+            return np.array([[cos(ang), -sin(ang), 0], [sin(ang), cos(ang), 0], [0,0,1]])
+
+        total_energy_rot, ang_interval_rot = self.rotate_plate(matrix_rot, *rot_config, p_1, p_2)
+
+        # GRÁFICO  
+        fig, (ax_inc, ax_rot) = plt.subplots(2, 1)
+
+        ax_inc.plot(ang_interval_inc, total_energy_inc)
+
+        ax_inc.set_xlabel("Ângulo de inclinação (°)")
+        ax_inc.set_ylabel("Energia (Kwh)")
+        ax_inc.grid()
+
+        ax_rot.plot(ang_interval_rot, total_energy_rot)
+
+        ax_rot.set_xlabel("Ângulo de rotação (°)")
+        ax_rot.set_ylabel("Energia (Kwh)")
+        ax_rot.grid()
+
+        plt.show()
+
+        return total_energy_inc, total_energy_rot
+
+    
+    def delta_orintation_compar(self, ang_i, ang_f, num_points):
+        ang_delta = np.linspace(ang_i, ang_f, num_points)
+
+        # INCLINAÇÃO
+        print("INCLINAÇÃO")
+
+        def matrix_inc(ang): 
+            return np.array([[1, 0, 0], [0, cos(ang), sin(ang)], [0,-sin(ang), cos(ang)]])
+        
+        total_energy_inc, _ = self.rotate_plate(matrix_inc, ang_i, ang_f, num_points, self.p_1, self.p_2)
+
+        # ROTAÇÃO
+        print("\nROTAÇÃO")
+        
+        def matrix_rot(ang): 
+            return np.array([[cos(ang), -sin(ang), 0], [sin(ang), cos(ang), 0], [0,0,1]])
+
+        total_energy_rot, _ = self.rotate_plate(matrix_rot, ang_i, ang_f, num_points, self.p_1, self.p_2)
+
+        #GRÁFICO
+        fig, ax = plt.subplots()
+
+        ax.plot(ang_delta, total_energy_inc, label="Inclinação")
+        ax.plot(ang_delta, total_energy_rot, label="Rotação")
+
+        ax.set_xlabel("$\Delta \theta$ (°)")
+        ax.set_ylabel("Energia (Kwh)")
+        ax.grid()
+        ax.legend()
+
+        plt.show()
