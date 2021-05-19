@@ -129,25 +129,36 @@ class LigthArea(object):
         self.steps_t = np.floor( (t_f - t_i) / self.size_step ) # número de passos que serão necessários para realizar a integração (será necessário realizair um passo adicional se o intervalo de integração não for divisível por size_step)
 
 
-    def calculate_energy(self):
+    def calculate_energy(self, power_graph):
         '''
         Calcula a enrgia solar que passa pelo quadrilátero no intervalo de tempo definido.
 
         PARÂMETROS
         ----------
-            Nada
+            power_grapf: bool
+                Determina se é para retornar os valores da projeção da área unitária em função do tempo (que também é a potência relativa em relação a potência máxima).
         
         RETORNA
         -------
-            Nada
+            total_energy: float
+                Energia total capturada pelo área unitária no intervalo de tempo dado em kWh.
+
+            area_sunz: 2-D nparray
+                Projeção da área unitária em função do tempo e a posição z do Sol em função do tempo. 
         '''
         int_area = 0
         t_x = [self.t_i]
+
+        area_time = np.array([])
+        if (self.t_f - self.t_i)/self.delta_t > 7000: # Impede que o tamanho de area_time seja maior que 7000, evitando problemas de memória
+            power_graph = False
+
         for _ in range(0, int(self.steps_t)):
             int_area_step = 0
             t_x = np.arange(t_x[-1], t_x[-1] + self.size_step, self.delta_t) + self.delta_t/2
             
             area_value, sun_z_pos = self.area_t(t_x)
+            
             for area_i, s_z in zip(area_value, sun_z_pos):
                 if s_z > 0:
                     if area_i > 0:
@@ -160,6 +171,10 @@ class LigthArea(object):
             t_x = np.arange(t_x[-1], self.t_f, self.delta_t) + self.delta_t/2
             
             area_value, sun_z_pos = self.area_t(t_x)
+            
+            if power_graph:
+                area_sunz = np.array([area_value, sun_z_pos])
+
             for area_i, s_z in zip(area_value, sun_z_pos):
                 if s_z > 0:
                     if area_i > 0:
@@ -168,7 +183,7 @@ class LigthArea(object):
             int_area += int_area_step
 
         total_energy = int_area * self.w_s * 24 * 60 * 60 * 1 / 3600000
-        return total_energy
+        return total_energy, area_sunz
 
 
     def range_orientation(self, ang_1, ang_2, size_step):
@@ -232,3 +247,24 @@ class LigthArea(object):
             fig.colorbar(surf, shrink=0.5, aspect=5)
 
             plt.show()
+
+    def power_graph(self, area_sunz):
+        area_t, sun_z = area_sunz
+
+        if (self.t_f - self.t_i)/self.delta_t < 7000:
+            time_x = np.arange(self.t_i, self.t_f, self.delta_t) + self.delta_t/2
+
+            for i in range(area_t.size):
+                if sun_z[i] < 0 or area_t[i] < 0:
+                    area_t[i] = 0
+
+            plt.plot(time_x, area_t, label="inclinado")
+
+            plt.xlabel("Tempo (dias)")
+            plt.ylabel("Potêcia (relativa a potência máxima)")
+
+            plt.grid()
+
+            plt.show()
+        else:
+            print("Erro!: Norma do intervalo de integrção maior do que 7000")
