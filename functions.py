@@ -3,6 +3,31 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
+
+def rotation_matrix(rotation: list):
+    '''
+        Retorna a matrix que contém as rotações em série em "rotation".
+
+        Parâmetros:
+            rotation: list od tuples
+                Cada elemento dessa lista é uma tupla cujo primeiro elemento é o eixo de rotação
+                e o segundo elemento o ângulo de rotação em radianos.
+                O i-ésimo elemento dessa lista contém a i-ésima rotação que é aplicada.
+    '''
+    rot_final = np.identity(3)
+    for axis, angle in rotation:
+        if axis == "x":
+            rot_el = np.array([[1, 0, 0], [0, cos(angle), -sin(angle)], [0, sin(angle), cos(angle)]])
+        elif axis == "y":
+            rot_el = np.array([[cos(angle), 0, sin(angle)], [0, 1, 0], [-sin(angle), 0, cos(angle)]])
+        elif axis == "z":
+            rot_el = np.array([[cos(angle), -sin(angle), 0], [sin(angle), cos(angle), 0], [0,0, 1]])
+
+        rot_final = rot_el.dot(rot_final)
+
+    return rot_final
+
+
 class LigthArea(object):
     def __init__(self, phi, e, w_s, v_sa, v_sd,  p_1, p_2) -> None:
         self.phi = phi
@@ -27,10 +52,31 @@ class LigthArea(object):
         '''
         self.M_AB = M_AB = np.array([[1,0,0], [0,sin(phi), cos(phi)], [0 , -cos(phi), sin(phi)]])
 
+    def solar_path(self, t):
+        w_t = self.v_sa / (2* np.pi) * 360
+        w_r = self.v_sd / (2* np.pi) * 360
+
+        theta = np.deg2rad(w_t * t)
+        x = -np.sin(theta)
+        y = np.cos(theta)
+        z = np.zeros(t.size)
+
+        points = np.array([x, y, z]).transpose()
+
+        points_local = []
+        for idx, t_i in enumerate(t):
+            alpha = w_r * t_i
+            rot = rotation_matrix([("x", np.deg2rad(self.e/(np.pi)*180)), ("z", np.deg2rad(-alpha-90)), ("x", np.deg2rad(self.phi/(np.pi)*180 - 90))])
+
+            points_local.append(rot.dot(points[idx,:]))
+
+        points_local = np.array(points_local).transpose()
+        return points_local
+
 
     def d_t(self, t):
         '''
-        Declinação em função do tempo (neagtivo quando o Sol está no hemisfério Sul Celeste).
+        Declinação em função do tempo (negativo quando o Sol está no hemisfério Sul Celeste).
 
         PARÂMETROS
         ----------
@@ -79,8 +125,9 @@ class LigthArea(object):
                 Array com as posições z da base A (base no local do quadrilátero) para os intantes dados em t.
         '''
 
-        s_tb = np.array([-cos(self.d_t(t))*sin(self.h_t(t)), -cos(self.d_t(t))*cos(self.h_t(t)) , sin(self.d_t(t))])
-        s_t = self.M_AB.dot(s_tb)
+        # s_tb = np.array([-cos(self.d_t(t))*sin(self.h_t(t)), -cos(self.d_t(t))*cos(self.h_t(t)) , sin(self.d_t(t))])
+        # s_t = self.M_AB.dot(s_tb)
+        s_t = self.solar_path(t)
 
         n_t = t.size
 
@@ -182,6 +229,7 @@ class LigthArea(object):
             
             int_area += int_area_step
 
+        # total_energy = int_area * self.w_s * 24 * 60 * 60 * 1 / 3600000
         total_energy = int_area * self.w_s * 24 * 60 * 60 * 1 / 3600000
         return total_energy, area_sunz
 
@@ -258,7 +306,7 @@ class LigthArea(object):
                 if sun_z[i] < 0 or area_t[i] < 0:
                     area_t[i] = 0
 
-            plt.plot(time_x, area_t, label="inclinado")
+            plt.plot(time_x, area_t*10*2 * self.w_s/1000 * 0.4 * 0.7, label="inclinado")
 
             plt.xlabel("Tempo (dias)")
             plt.ylabel("Potêcia (relativa a potência máxima)")

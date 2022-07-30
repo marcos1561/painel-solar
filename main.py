@@ -1,6 +1,5 @@
 from numpy import cos, sin, pi
 import matplotlib.pyplot as plt
-from numpy.core.shape_base import atleast_1d
 import functions as func
 
 np = func.np
@@ -8,8 +7,8 @@ np = func.np
 '''
 Constantes
 '''
-phi = -28.93 / 180*pi # Latitude do local (negativo se for latitude Sul).
-e = 23.4 / 180*pi # Obliquidade da eclíptica. 
+phi = -28.93 / 180 * pi # Latitude do local (negativo se for latitude Sul).
+e = 23.4 / 180 * pi # Obliquidade da eclíptica. 
 w_s = 850 # Constante solar na superfície da Terra em W/s.
 v_sa = 2*pi/365.25 # Velocidade angular do Sol em seu caminho na eclíptica em rad/dia.
 v_sd = 2*pi # Velocidade angular do Sol na coordenada ângulo horário em rad/dia.
@@ -18,7 +17,7 @@ v_sd = 2*pi # Velocidade angular do Sol na coordenada ângulo horário em rad/di
 '''
 Posição dos dois vértices, adjacentes ao vértice na origem, do quadrilátero.
 '''
-inclination = 27.5
+inclination = 12.5
 p_1 = np.array([1,0,0])
 p_2 = np.array([0, cos(inclination/180*pi), -sin(inclination/180*pi)])
 
@@ -28,8 +27,8 @@ Limites de integração da integral da área projetada em função do tempo. A i
 '''
 delta_t = 0.001 # largura dos retângulos. 
 t_x_max = 7000 # número máximo de retângulos que são calculados por vez.
-t_i = 150.75 # tempo inicial (limite inferior)
-t_f = 151.7  # tempo final (limite superior)
+t_i = 40# tempo inicial (limite inferior)
+t_f = 41 # tempo final (limite superior)
 
 
 solar_energy = func.LigthArea(phi, e, w_s, v_sa, v_sd, p_1, p_2)
