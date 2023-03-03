@@ -1,42 +1,42 @@
-from numpy import cos, sin, pi
-import matplotlib.pyplot as plt
-import functions as func
+from math import cos, sin, pi, radians
+import datetime
+import numpy as np
 
-np = func.np
+import solar_plant
 
 '''
 Constantes
 '''
-phi = -28.93 / 180 * pi # Latitude do local (negativo se for latitude Sul).
-e = 23.4 / 180 * pi # Obliquidade da eclíptica. 
-w_s = 850 # Constante solar na superfície da Terra em W/s.
-v_sa = 2*pi/365.25 # Velocidade angular do Sol em seu caminho na eclíptica em rad/dia.
-v_sd = 2*pi # Velocidade angular do Sol na coordenada ângulo horário em rad/dia.
-
+phi = radians(-38.93) # Latitude do local (negativo se for latitude Sul).
+e = radians(23.4) # Obliquidade da eclíptica. 
+# w_s = 850 # Constante solar na superfície da Terra em W.
+w_t = radians(360)/365.25 # Velocidade angular do Sol em seu caminho na eclíptica em rad/dia.
+w_r = radians(360) # Velocidade angular de rotação da Terra em rad/dia.
+placas_cfg = solar_plant.Panels(
+    efficiency=0.17,
+    num=18,
+    unit_area=2
+)
 
 '''
-Posição dos dois vértices, adjacentes ao vértice na origem, do quadrilátero.
+Posição dos dois vértices do quadrado, adjacentes ao vértice naa origem.
+Esse quadrado deve ter área 1 e possuir a mesma orientação das placas solares.
 '''
-inclination = 12.5
+inclination = 20
+# inclination = 37
 p_1 = np.array([1,0,0])
 p_2 = np.array([0, cos(inclination/180*pi), -sin(inclination/180*pi)])
 
-
 '''
-Limites de integração da integral da área projetada em função do tempo. A integração é feita numéricamente divindo a área em retângulos 
+Intervalo de integração
 '''
-delta_t = 0.001 # largura dos retângulos. 
-t_x_max = 7000 # número máximo de retângulos que são calculados por vez.
-t_i = 40# tempo inicial (limite inferior)
-t_f = 41 # tempo final (limite superior)
+t_i, t_f, dt = 0, 360.25, 1/24/60*10
+# t_i = (datetime.date(2022, 1, 20) - datetime.date(2022, 6, 21)).days 
+# t_f = t_i + 1
 
 
-solar_energy = func.LigthArea(phi, e, w_s, v_sa, v_sd, p_1, p_2)
+planta = solar_plant.Plant(p_1, p_2, w_r, w_t, e, phi, placas_cfg)
+# solar_plant.debug_visualization(planta, np.arange(t_i, t_f, dt))
 
-solar_energy.time_interval_steps(delta_t, t_x_max, t_i, t_f) # Definindo o intervalo de integração.
-total_energy, area_sunz = solar_energy.calculate_energy(power_graph=True) # Calculando a energia incidente
-print(total_energy)
-
-solar_energy.power_graph(area_sunz)
-
-# solar_energy.range_orientation([-4, 4], [27-1, 27+6], 1)
+energy = planta.calculate_energy(t_i, t_f, dt, 7000, progress=True)
+print("Energia gerada:", round(energy,2), "KWh")
