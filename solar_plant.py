@@ -53,16 +53,16 @@ class Plant():
                 -> a e b estão em metros.
         
         w_t:
-            Velocidade angular de translação da terra em graus por dia.
+            Velocidade angular de translação da terra em radianos por dia.
 
         w_r:
-            Velocidade angular de rotação da terra em graus por dia.
+            Velocidade angular de rotação da terra em radianos por dia.
 
         e:
-            Obliquidade da eclíptica em graus.
+            Obliquidade da eclíptica em radianos.
 
         phi:
-            Latitude do observador em graus.
+            Latitude do observador em radianos.
         '''
         self.a = a
         self.b = b
