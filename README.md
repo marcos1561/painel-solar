@@ -11,14 +11,9 @@ O ponto inicial do tempo é quando o Sol está com máxima declinação (solstí
 * Considerado velocidade angular constante para a translação e rotação da Terra.
 * Não é considerado a variação da irradiação solar devido a excentricidade da órbita da Terra.
 * É utilizado a seguinte expressão para o cálculo da irradiação solar.
-$$
- I = 1.353~~kW/m^2 ~\cdot 0.7^{AM^{0.678}}
-$$
+$$I = 1,353~~kW/m^2 ~\cdot 0,7^{AM^{0,678}}$$
 Em que $AM$ é a massa de ar, dada por
-$$
-AM = \frac{1}{cos(z_s)}
-$$
-
+$$AM = \frac{1}{cos(z_s)}$$
 Em que $z_s$ é o ângulo zenital do Sol.
 
 
